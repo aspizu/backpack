@@ -1,15 +1,40 @@
-# .
+# `backpack`
 
-To install dependencies:
+backpack is the goboscript package manager.
 
-```bash
-bun install
+## Usage
+
+```
+usage: backpack <command>
+
+     sync <path>    Synchronizes the project's dependencies
+                    path: The path to the project's root directory. (Default: current directory)
+     purge          Removes unused packages from the cache
 ```
 
-To run:
+### Manifest
 
-```bash
-bun run src/index.ts
+List the dependencies of your package in the `goboscript.toml` file.
+
+```toml
+[dependencies]
+packageName = "https://github.com/author/packageName@v1.0.0"
 ```
 
-This project was created using `bun init` in bun v1.1.45. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+`v1.0.0` is a git tag.
+
+### Sync
+
+Download and link all the files from the dependencies recursively
+inside the `backpack` directory in your package's root directory.
+
+Use the dependencies in your package by `%include`ing them from the `backpack` directory.
+
+```goboscript
+%include backpack/packageName/packageFile
+```
+
+### Purge
+
+Remove unused packages from the cache (located in `~/.backpack/cache/packages`).
+
