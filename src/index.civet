@@ -1,0 +1,35 @@
+"civet autoLet"
+
+* as Bun from bun
+* as Path from path
+* as Util from util
+
+{PackagesCache} from ./packages_cache.civet
+{Project} from ./project.civet
+
+packages_cache_path = `${Bun.env.HOME}/.backpack/cache/packages`
+
+// This encodes text into a filename-safe format. This should output a Windows or Unix
+// valid filename. decodeURIComponent can decode '%2A' into '*', but encodeURIComponent
+// can't encode '*' into '%2A'.
+function encode(text: string) encodeURIComponent(text).replace("*", "%2A")
+
+function decode(text: string) decodeURIComponent(text)
+
+function canonicalize(path: string) Path.resolve(Bun.env.PWD!, path)
+
+packages_cache = new PackagesCache(packages_cache_path)
+await packages_cache.open()
+if Bun.argv[2] == "sync"
+    project = new Project(canonicalize(Bun.argv[3] or ""), packages_cache)
+    await project.open()
+    await project.sync()
+else if Bun.argv[2] == "purge"
+    await packages_cache.collect_garbage()
+else
+    console.error
+        "usage: backpack <command>\n\n"
+        "    sync <path>    Synchronizes the project's dependencies\n"
+        "                   path: The path to the project's root directory. (Default: current directory)\n"
+        "    purge          Removes unused packages from the cache\n"
+await packages_cache.close()

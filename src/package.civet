@@ -1,0 +1,15 @@
+"civet autoLet"
+
+* as Path from path
+* as Bun from bun
+
+export interface Manifest
+    dependencies: Record<string, string>
+
+export class Package
+    constructor(@path: string, @manifest: Manifest = {dependencies: {}})
+
+    open()
+        manifest_path = Path.join(@path, "goboscript.toml")
+        try
+            @manifest = await import(manifest_path)

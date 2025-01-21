@@ -1,0 +1,54 @@
+"civet autoLet"
+
+* as Path from path
+* as Bun from bun
+* as Fs from fs/promises
+
+// The maximum age of a package cache in milliseconds
+// If a package was not touched for this amount of time, it will be removed from the
+// cache.
+MAX_CACHE_AGE = 1000 * 60 * 60 * 24 * 30 // 30 days
+
+function generateRandomId() Date.now().toString(36)
+
+// Currently, if the user creates another instance of package cache and clones packages
+// then the index.json file will be overwritten with out of date information.
+// TODO: Use a cross-platform file locking mechanism to ensure that multiple instances
+// of a package cache are not created at the same time.
+// On windows, files can be opened to exclusively lock them.
+// On linux, there is a lockfile utility.
+// npm/lockfile and some other node packages exist, though severely dormant.
+export class PackagesCache
+    index_path: string
+    index_file!: Bun.BunFile
+
+    constructor(@path: string, @index: Record<string, {id: string, last_used: number}> = {})
+        @index_path = Path.join(@path, "index.json")
+        @index_file = Bun.file(@index_path)
+
+    open()
+        await Fs.mkdir(@path, recursive: true)
+        try
+            @index = await @index_file.json()
+    
+    get_package(url: string)
+        if not @index[url]
+            await @clone_package(url)
+        @index[url].last_used = Date.now()
+        Path.join(@path, @index[url].id)
+
+    clone_package(url: string)
+        id = generateRandomId()
+        @index[url] = {id, last_used: Date.now()}
+        [repo, version] = url.split("@")
+        await Bun.$`git clone ${repo} --depth 1 --branch ${version} ${Path.join(@path, id)}`
+
+    collect_garbage()
+        for [url, {id, last_used}] of Object.entries(@index)
+            if (Date.now() - last_used) > MAX_CACHE_AGE
+                await Fs.rm(Path.join(@path, id), recursive: true, force: true)
+                delete @index[url]
+
+    close()
+        // Is there a faster way to serialize JSON into a file directly in Bun?
+        await Bun.write(@index_path, JSON.stringify(@index))

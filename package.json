@@ -1,0 +1,17 @@
+{
+    "name": "backpack",
+    "module": "src/index.ts",
+    "type": "module",
+    "scripts": {
+        "dev": "bun src/index.civet"
+    },
+    "devDependencies": {
+        "@types/bun": "latest"
+    },
+    "peerDependencies": {
+        "typescript": "^5.7.3"
+    },
+    "dependencies": {
+        "@danielx/civet": "^0.9.6"
+    }
+}
