@@ -1,2 +1,2 @@
-playground
-node_modules
+/target
+.env

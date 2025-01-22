@@ -1,0 +1,4 @@
+imports_granularity = "Item"
+group_imports = "StdExternalCrate"
+match_arm_leading_pipes = "Preserve"
+where_single_line = true
