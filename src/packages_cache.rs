@@ -1,10 +1,15 @@
 use std::fs;
 use std::fs::File;
+use std::io;
 use std::io::BufReader;
 use std::io::BufWriter;
 use std::path::PathBuf;
 use std::process::Command;
 use std::process::Stdio;
+use std::sync::Arc;
+use std::sync::Mutex;
+use std::sync::RwLock;
+use std::thread;
 
 use anyhow::Context;
 use arcstr::ArcStr;
@@ -57,14 +62,25 @@ impl PackagesCache {
     }
 
     pub fn purge(&mut self) -> anyhow::Result<()> {
-        let mut error = Ok(());
+        let mut to_delete = vec![];
         self.index.retain(|_, entry| {
-            if let Err(err) = fs::remove_dir_all(self.path.join(&*entry.id)) {
-                error = Err(err.into());
+            if entry.last_used + 60 * 60 * 24 * 7 < seconds_since_epoch() {
+                to_delete.push(entry.id.clone());
+                false
+            } else {
+                true
             }
-            entry.last_used + 60 * 60 * 24 * 7 < seconds_since_epoch()
         });
-        error
+        let mut handles = vec![];
+        let path = Arc::new(self.path.clone());
+        for id in to_delete {
+            let path = path.clone();
+            handles.push(thread::spawn(move || fs::remove_dir_all(path.join(&*id))));
+        }
+        for handle in handles {
+            handle.join().unwrap()?;
+        }
+        Ok(())
     }
 
     fn clone_package(&mut self, url: ArcStr) -> anyhow::Result<ArcStr> {
