@@ -80,6 +80,12 @@ impl PackagesCache {
         Ok(())
     }
 
+    pub fn purge_all(&mut self) -> anyhow::Result<()> {
+        fs::remove_dir_all(&*self.path)?;
+        self.index.clear();
+        Ok(())
+    }
+
     fn clone_package(&mut self, url: ArcStr) -> anyhow::Result<ArcStr> {
         let id = generate_random_id();
         let entry = PackagesCacheEntry {

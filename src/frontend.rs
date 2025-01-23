@@ -30,7 +30,13 @@ pub fn frontend() -> anyhow::Result<()> {
     )?));
     match command {
         Command::Sync { input } => sync(packages_cache, input),
-        Command::Purge => packages_cache.lock().unwrap().purge(),
+        Command::Purge { all } => {
+            if all {
+                packages_cache.lock().unwrap().purge_all()
+            } else {
+                packages_cache.lock().unwrap().purge()
+            }
+        }
         Command::Completions { .. } => unreachable!(),
     }
 }

@@ -22,7 +22,11 @@ pub enum Command {
     Sync { input: Option<PathBuf> },
     /// Purge unused packages from the package cache.
     #[command()]
-    Purge,
+    Purge {
+        /// Remove the entire package cache, not just unused packages.
+        #[arg(short, long)]
+        all: bool,
+    },
     Completions {
         /// The shell to generate the completions for.
         #[arg(value_enum)]
