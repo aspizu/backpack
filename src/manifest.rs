@@ -4,7 +4,7 @@ use serde::Deserialize;
 use serde::Serialize;
 
 #[derive(Default, Serialize, Deserialize)]
+#[serde(default)]
 pub struct Manifest {
-    #[serde(default)]
     pub dependencies: FxHashMap<ArcStr, ArcStr>,
 }
