@@ -9,13 +9,15 @@ use directories::ProjectDirs;
 
 use crate::cli::Cli;
 use crate::cli::Command;
+use crate::package::Package;
 use crate::packages_cache::PackagesCache;
 use crate::project::Project;
 
 fn sync(packages_cache: Arc<Mutex<PackagesCache>>, input: Option<PathBuf>) -> anyhow::Result<()> {
     let input = input.unwrap_or_else(|| current_dir().unwrap());
-    let project = Project::new(input, packages_cache.clone())?;
-    project.sync()
+    let package = Package::new(input.clone())?;
+    let mut project = Project::new(input, packages_cache.clone())?;
+    project.add_dependencies_for_package(&package)
 }
 
 pub fn frontend() -> anyhow::Result<()> {

@@ -3,32 +3,43 @@ use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
 
+use fxhash::FxHashSet;
+
 use crate::backpack::Backpack;
 use crate::package::Package;
 use crate::packages_cache::PackagesCache;
 
 pub struct Project {
-    package: Package,
     packages_cache: Arc<Mutex<PackagesCache>>,
     backpack: Arc<Mutex<Backpack>>,
+    synced: FxHashSet<PathBuf>,
 }
 
 impl Project {
     pub fn new(path: PathBuf, packages_cache: Arc<Mutex<PackagesCache>>) -> anyhow::Result<Self> {
         Ok(Self {
             backpack: Arc::new(Mutex::new(Backpack::new(path.join("backpack"))?)),
-            package: Package::new(path)?,
             packages_cache,
+            synced: Default::default(),
         })
     }
 
-    fn add_dependencies_for_package(&self, package: &Package) -> anyhow::Result<()> {
+    pub fn add_dependencies_for_package(&mut self, package: &Package) -> anyhow::Result<()> {
+        if self.synced.contains(&package.path) {
+            return Ok(());
+        }
+        self.synced.insert(package.path.clone());
         let mut handles = vec![];
+        println!(
+            "adding dependencies from package {}",
+            package.path.display()
+        );
         for (name, url) in &package.manifest.dependencies {
             let name = name.clone();
             let url = url.clone();
             let packages_cache = self.packages_cache.clone();
             let backpack = self.backpack.clone();
+            println!("adding dependency {}", url);
             handles.push(thread::spawn(move || {
                 let path = packages_cache.lock().unwrap().get_package(url).unwrap();
                 backpack.lock().unwrap().add_package(name, &path).unwrap();
@@ -37,19 +48,12 @@ impl Project {
         for handle in handles {
             handle.join().unwrap();
         }
-        for (name, url) in &package.manifest.dependencies {
+        for url in package.manifest.dependencies.values() {
             let packages_cache = self.packages_cache.clone();
-            let backpack = self.backpack.clone();
             let path = packages_cache.lock().unwrap().get_package(url.clone())?;
             let dependency = Package::new(path)?;
-            if !backpack.lock().unwrap().contains_package(name) {
-                self.add_dependencies_for_package(&dependency)?;
-            }
+            self.add_dependencies_for_package(&dependency)?;
         }
         Ok(())
-    }
-
-    pub fn sync(&self) -> anyhow::Result<()> {
-        self.add_dependencies_for_package(&self.package)
     }
 }
