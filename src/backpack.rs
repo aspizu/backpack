@@ -39,8 +39,4 @@ impl Backpack {
             .context("Failed to create symlink")?;
         Ok(())
     }
-
-    pub fn contains_package(&self, name: &ArcStr) -> bool {
-        self.packages.contains(name)
-    }
 }
