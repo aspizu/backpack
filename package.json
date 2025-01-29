@@ -1,0 +1,17 @@
+{
+    "name": "backpack",
+    "module": "src/index.ts",
+    "type": "module",
+    "scripts": {
+        "dev": "bun run src/index.ts",
+        "build": "bun build src/index.ts --compile --minify --sourcemap --bytecode --outfile dist/backpack",
+        "fmt": "bunx --bun prettier -w ."
+    },
+    "devDependencies": {
+        "@types/bun": "latest",
+        "prettier": "^3.4.2"
+    },
+    "peerDependencies": {
+        "typescript": "^5.7.3"
+    }
+}
