@@ -2,11 +2,12 @@ use std::path::PathBuf;
 
 use anyhow::Context;
 
+use crate::dependency::Dependency;
 use crate::manifest::Manifest;
 
 pub struct Package {
     pub path: PathBuf,
-    pub manifest: Manifest,
+    pub dependencies: Vec<Dependency>,
 }
 
 impl Package {
@@ -18,6 +19,13 @@ impl Package {
         } else {
             Manifest::default()
         };
-        Ok(Self { path, manifest })
+        Ok(Self {
+            path,
+            dependencies: manifest
+                .dependencies
+                .into_iter()
+                .map(|(name, url)| Dependency::new(name, url))
+                .collect(),
+        })
     }
 }

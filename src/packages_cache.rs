@@ -15,6 +15,7 @@ use rmp_serde::Serializer;
 use serde::Deserialize;
 use serde::Serialize;
 
+use crate::dependency::Dependency;
 use crate::misc::generate_random_id;
 use crate::misc::seconds_since_epoch;
 
@@ -48,12 +49,12 @@ impl PackagesCache {
         })
     }
 
-    pub fn get_package(&mut self, url: ArcStr) -> anyhow::Result<PathBuf> {
-        if let Some(entry) = self.index.get_mut(&url) {
+    pub fn get_package(&mut self, dependency: &Dependency) -> anyhow::Result<PathBuf> {
+        if let Some(entry) = self.index.get_mut(dependency.to_string().as_str()) {
             entry.last_used = seconds_since_epoch();
             Ok(self.path.join(&*entry.id))
         } else {
-            let id = self.clone_package(url)?;
+            let id = self.clone_package(dependency)?;
             Ok(self.path.join(&*id))
         }
     }
@@ -86,28 +87,27 @@ impl PackagesCache {
         Ok(())
     }
 
-    fn clone_package(&mut self, url: ArcStr) -> anyhow::Result<ArcStr> {
+    fn clone_package(&mut self, dependency: &Dependency) -> anyhow::Result<ArcStr> {
         let id = generate_random_id();
         let entry = PackagesCacheEntry {
             id: id.clone(),
             last_used: seconds_since_epoch(),
         };
-        self.index.insert(url.clone(), entry);
-        let (repo, version) = url.rsplit_once('@').unwrap_or_else(|| (&url, "main"));
+        self.index.insert(dependency.to_string().into(), entry);
         Command::new("git")
             .args([
                 "clone",
                 "--depth=1",
                 "--branch",
-                version,
-                repo,
+                dependency.version.as_ref().unwrap(),
+                &dependency.url,
                 self.path.join(&*id).to_str().unwrap(),
             ])
             .stdout(Stdio::null())
             .stderr(Stdio::null())
             .status()
-            .with_context(|| format!("Failed to clone package {}", url))?;
-        Ok(self.index[&url].id.clone())
+            .with_context(|| format!("Failed to clone package {}", dependency))?;
+        Ok(id)
     }
 }
 

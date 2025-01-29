@@ -1,5 +1,6 @@
 mod backpack;
 mod cli;
+mod dependency;
 mod frontend;
 mod manifest;
 mod misc;
