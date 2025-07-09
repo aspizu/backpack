@@ -16,3 +16,27 @@ dependencies = [
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.basedpyright]
+reportUnknownVariableType = false
+reportUnknownMemberType = false
+reportUnknownArgumentType = false
+reportMissingModuleSource = false
+reportMissingTypeStubs = false
+reportWildcardImportFromLibrary = false
+reportPrivateUsage = false
+reportPrivateImportUsage = false
+reportAny = false
+reportExplicitAny = false
+reportUnusedCallResult = false
+reportImportCycles = false
+reportImplicitStringConcatenation = false
+
+[tool.ruff.lint]
+select = ["ALL"]
+extend-safe-fixes = ["ALL"]
+unfixable = ["F841"]
+ignore = ["COM", "D", "S101", "PLR2004"]
+
+[tool.ruff.lint.isort]
+required-imports = ["from __future__ import annotations"]
