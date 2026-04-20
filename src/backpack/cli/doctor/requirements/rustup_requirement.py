@@ -46,6 +46,9 @@ class RustupRequirement(CommandRequirement):
                 "follow instructions at https://rustup.rs/ to install rustup and cargo"
             )
             raise NotImplementedError
-        q = "do you want to install rustup (and cargo) using the official installer script?"
+        q = (
+            "do you want to install rustup (and cargo)"
+            " using the official installer script?"
+        )
         if not Confirm.ask(q):
             _install_cargo_unix()

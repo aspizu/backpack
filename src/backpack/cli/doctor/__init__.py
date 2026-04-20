@@ -54,25 +54,26 @@ def _fix_tree(
         out.append(requirement)
 
 
-def doctor(fix: str | bool) -> None:
-
+def _doctor_fix_one(fix: str) -> None:
     check_tree = []
     _check_tree(bkpk_requirement, check_tree)
-    if isinstance(fix, str):
-        fix = fix.lower()
-        for requirement in check_tree:
-            if requirement.id == fix:
-                is_ok, _msg = requirement.check()
-                if is_ok:
-                    log.error("requirement '%s' is already satisfied", fix)
-                    sys.exit(1)
-                requirement.fix()
-                return
-        log.error("requirement '%s' not found", fix)
-        sys.exit(1)
+    for requirement in check_tree:
+        if requirement.id == fix:
+            is_ok, _msg = requirement.check()
+            if is_ok:
+                log.error("requirement '%s' is already satisfied", fix)
+                sys.exit(1)
+            requirement.fix()
+            return
+    log.error("requirement '%s' not found", fix)
+    sys.exit(1)
+
+
+def _doctor_check_all() -> tuple[set, set]:
+    check_tree = []
+    _check_tree(bkpk_requirement, check_tree)
     ok = set()
     error = set()
-    warning = set()
     for requirement in check_tree:
         is_ok, message = requirement.check()
         if is_ok:
@@ -80,10 +81,17 @@ def doctor(fix: str | bool) -> None:
             ok.add(requirement)
         elif requirement.is_optional:
             print(" [yellow]WARN[/yellow]", message)
-            warning.add(requirement)
         else:
             print("[red]ERROR[/red]", message)
             error.add(requirement)
+    return ok, error
+
+
+def doctor(fix: str | bool) -> None:
+    if isinstance(fix, str):
+        _doctor_fix_one(fix.lower())
+        return
+    ok, error = _doctor_check_all()
     if fix:
         fix_tree = []
         _fix_tree(bkpk_requirement, ok, fix_tree)
