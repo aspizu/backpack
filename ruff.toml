@@ -1,0 +1,5 @@
+[lint]
+select = ["ALL"]
+ignore = ["T201", "D", "COM", "FBT", "A004", "S603", "A002"]
+extend-fixable = ["ALL"]
+extend-safe-fixes = ["ALL"]
