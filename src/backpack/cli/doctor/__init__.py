@@ -1,3 +1,5 @@
+import logging
+import sys
 from typing import TYPE_CHECKING
 
 from rich import print
@@ -6,6 +8,8 @@ from .requirements import bkpk_requirement
 
 if TYPE_CHECKING:
     from .requirements.base_requirement import BaseRequirement
+
+log = logging.getLogger(__name__)
 
 
 def _check_tree(
@@ -50,16 +54,33 @@ def _fix_tree(
         out.append(requirement)
 
 
-def doctor(fix: bool) -> None:
+def doctor(fix: str | bool) -> None:
+
     check_tree = []
     _check_tree(bkpk_requirement, check_tree)
+    if isinstance(fix, str):
+        fix = fix.lower()
+        for requirement in check_tree:
+            if requirement.id == fix:
+                is_ok, _msg = requirement.check()
+                if is_ok:
+                    log.error("requirement '%s' is already satisfied", fix)
+                    sys.exit(1)
+                requirement.fix()
+                return
+        log.error("requirement '%s' not found", fix)
+        sys.exit(1)
     ok = set()
     error = set()
+    warning = set()
     for requirement in check_tree:
         is_ok, message = requirement.check()
         if is_ok:
             print("   [green]OK[/green]", message)
             ok.add(requirement)
+        elif requirement.is_optional:
+            print(" [yellow]WARN[/yellow]", message)
+            warning.add(requirement)
         else:
             print("[red]ERROR[/red]", message)
             error.add(requirement)

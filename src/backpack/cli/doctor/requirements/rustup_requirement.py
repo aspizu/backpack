@@ -16,6 +16,7 @@ def _install_cargo_unix() -> None:
 class NightlyRequirement(BaseRequirement):
     def __init__(self) -> None:
         super().__init__(dependencies=[RustupRequirement()])
+        self.id = "nightly"
 
     def check(self) -> tuple[bool, str]:
         try:

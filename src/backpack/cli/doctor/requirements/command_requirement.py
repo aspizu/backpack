@@ -14,6 +14,7 @@ class CommandRequirement(BaseRequirement):
         dependencies: list[BaseRequirement] | None = None,
     ) -> None:
         super().__init__(dependencies)
+        self.id = command
         self.command = command
         self.check_version = check_version
 

@@ -52,7 +52,7 @@ _commands = {
         doctor,
         ["d"],
         help="Check (and optionally fix) issues with your setup.",
-        setup=lambda p: p.add_argument("--fix", action="store_true"),
+        setup=lambda p: p.add_argument("--fix", nargs="?", const=True, default=False),
     ),
     "new": Command(
         new,
