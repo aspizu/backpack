@@ -20,14 +20,110 @@ def _setup_build(p: argparse.ArgumentParser) -> None:
     p.add_argument(
         "-t",
         "--toolchain",
-        default="latest",
+        default=None,
         help="The version of the toolchain (goboscript compiler) to use.",
     )
 
 
 def _setup_new(p: argparse.ArgumentParser) -> None:
     p.add_argument(
-        "name", help="Name of the project.", type=Path, default=Path(), nargs="?"
+        "name",
+        help=(
+            "Name of directory to create new project, if not given, "
+            "the current directory is used. If this is a path to an existing directory,"
+            " it must be empty."
+        ),
+        type=Path,
+        default=Path(),
+        nargs="?",
+    )
+    p.add_argument(
+        "-t",
+        "--toolchain",
+        default=None,
+        help=(
+            "The version of the toolchain (goboscript compiler) to use,"
+            " defaults to 'latest'"
+        ),
+    )
+    p.add_argument(
+        "-G", "--no-git", action="store_true", help="Do not initialize a Git repository"
+    )
+    p.add_argument(
+        "-s",
+        "--std",
+        default=None,
+        help="Version of the standard library to use. Defaults to bleeding-edge",
+    )
+    p.add_argument("-b", "--bitmap-resolution", type=int, default=None)
+    p.add_argument(
+        "-f",
+        "--frame-rate",
+        "--fps",
+        type=int,
+        default=None,
+        help="Custom frame rate, used by TurboWarp",
+    )
+    p.add_argument(
+        "-c",
+        "--max-clones",
+        "--clones",
+        type=float,
+        default=None,
+        help=(
+            "Custom maximum number of clones allowed, used by TurboWarp."
+            " Use `--max-clones inf` for infinite clones"
+        ),
+    )
+    p.add_argument(
+        "-l",
+        "--no-miscellaneous-limits",
+        "--limitless",
+        action="store_true",
+        help="Disable miscellaneous limits, used by TurboWarp",
+    )
+    p.add_argument(
+        "-o",
+        "--no-sprite-fencing",
+        "--offscreen",
+        action="store_true",
+        help="Disable sprite fencing, used by TurboWarp",
+    )
+    p.add_argument(
+        "-i",
+        "--frame-interpolation",
+        "--interpolate",
+        action="store_true",
+        help="Enable frame interpolation, used by TurboWarp",
+    )
+    p.add_argument(
+        "-q",
+        "--high-quality-pen",
+        "--hqpen",
+        action="store_true",
+        help="Enable high quality pen, used by TurboWarp",
+    )
+    p.add_argument(
+        "-W",
+        "--stage-width",
+        "--width",
+        type=int,
+        default=None,
+        help="Custom stage width, used by TurboWarp",
+    )
+    p.add_argument(
+        "-H",
+        "--stage-height",
+        "--height",
+        type=int,
+        default=None,
+        help="Custom stage height, used by TurboWarp",
+    )
+    p.add_argument(
+        "-M",
+        "--no-makefile",
+        action="store_true",
+        help="Do not generate a Makefile for building the project",
     )
 
 
