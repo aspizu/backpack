@@ -1,5 +1,0 @@
-# Configuration Reference: <https://aspiz.uk/goboscript/docs/configuration.html>
-
-layers = ["main"]
-toolchain = "feat/switch"
-std = "2.0.0"
